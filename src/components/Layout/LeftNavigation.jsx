@@ -22,12 +22,6 @@ const LeftNavigation = ({ currentView, onNavigate }) => {
             active={currentView === 'dashboard'}
             onClick={() => onNavigate('dashboard')}
           />
-          <NavItem 
-            icon="calendar" 
-            label="Meetings" 
-            active={currentView === 'meetings'}
-            onClick={() => onNavigate('meetings')}
-          />
           <NavItem icon="feedback" label="Feedback" />
           <NavItem icon="bug" label="Bugs" />
           <NavItem icon="settings" label="Settings" />

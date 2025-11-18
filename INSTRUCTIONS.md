@@ -8,7 +8,12 @@ You are building a monochrome (black, white, gray) web app UI for a Customer Suc
 - Customer Feedback (feature ideas)
 - Bugs (which are submitted to Linear)
 
-The dashboard tracks all feedback, links Linear tickets, monitors real-time status, adds meeting notes, and receives email alerts.
+The dashboard displays a calendar view of all meetings from Google Calendar. When clicking on a meeting, users can view:
+- All Linear tickets connected to that meeting
+- All tasks associated with the meeting
+- All meeting notes and summaries
+
+The app also tracks feedback, links Linear tickets, monitors real-time status, adds meeting notes, and receives email alerts.
 
 **IMPORTANT: Build this in clear, progressive stages and ask for approval before moving to the next stage.**
 
@@ -36,13 +41,23 @@ The dashboard tracks all feedback, links Linear tickets, monitors real-time stat
   - Search bar
   - Filter dropdowns
 
-- **Main Grid View**
-  - Cards displayed evenly
-  - Responsive
+- **Dashboard - Calendar View**
+  - Full calendar grid showing all meetings from Google Calendar
+  - Month navigation (previous/next/today)
+  - Click on a meeting → opens meeting details drawer
+  - Monochrome calendar design
 
 - **Right-Side Drawer Panel**
-  - Opens when clicking a card
-  - Used for meeting notes and detailed information
+  - Opens when clicking a meeting or feedback card
+  - **Meeting Details Drawer** shows:
+    - Meeting information (title, date, time, location, organizer)
+    - Linked Linear tickets
+    - Tasks associated with the meeting
+    - Meeting notes (with history)
+  - **Feedback Details Drawer** shows:
+    - Feedback card details
+    - Linear ticket status
+    - Meeting notes
 
 ### Card Components
 - Each card uses:
@@ -80,7 +95,38 @@ Every card displays:
 - Created date
 - Click → opens right-side drawer
 
-### 3. Right-Side Drawer (Details Panel)
+### 3. Dashboard Calendar View
+- **Calendar Grid**
+  - Full month view with all days
+  - Shows meetings from Google Calendar on their respective dates
+  - Click on a meeting → opens meeting details drawer
+  - Month navigation (previous/next/today buttons)
+  - Highlights today's date
+  - Monochrome design
+
+### 4. Meeting Details Drawer
+When clicking a meeting in the calendar, opens a right-side drawer showing:
+- **Meeting Information**
+  - Title, date, time
+  - Location (if available)
+  - Organizer
+  - Link to open in Google Calendar
+- **Linear Tickets Section**
+  - List of all Linear tickets linked to this meeting
+  - Ticket title, status badge
+  - Link to open ticket in Linear
+  - Button to link new tickets
+- **Tasks Section**
+  - List of tasks for this meeting
+  - Checkbox to mark complete/incomplete
+  - Button to add new tasks
+- **Meeting Notes Section**
+  - Large textarea for adding notes (auto-saves)
+  - History of all notes (each note stamped with date/time)
+  - Option to add "Meeting Summary"
+  - Notes can be edited
+
+### 5. Feedback Details Drawer (Right-Side Drawer)
 Contains:
 - **Top area**
   - Client name
@@ -93,7 +139,7 @@ Contains:
   - History list for notes (each note stamped with date/time)
   - Option to add "Meeting Summary"
 
-### 4. Linear Integration
+### 6. Linear Integration
 If a feedback card has a Linear link:
 - Fetch ticket ID from URL
 - Pull:
@@ -113,7 +159,7 @@ Required statuses shown in UI:
 - Completed
 - Canceled
 
-### 5. Email Notifications
+### 7. Email Notifications
 Send email updates when a ticket changes to:
 - In Progress
 - Needs Info
@@ -129,7 +175,7 @@ Email contains:
 
 Use SendGrid, Resend, or Nodemailer with SMTP.
 
-### 6. Filters + Search
+### 8. Filters + Search
 Filters at the top of the dashboard:
 - Client
 - Category
@@ -165,6 +211,51 @@ Use Supabase or Firebase.
 | feedback_id | uuid (FK) |
 | note | text |
 | created_at | timestamp |
+
+**meetings**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | uuid | primary key |
+| google_calendar_id | string | ID from Google Calendar |
+| title | string | Meeting title |
+| meeting_date | timestamp | Start date/time |
+| end_date | timestamp | End date/time |
+| location | string | Optional |
+| organizer_email | string | |
+| description | text | Optional |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**meeting_linear_tickets**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | uuid | primary key |
+| meeting_id | uuid (FK) | References meetings |
+| linear_ticket_id | string | Linear ticket ID |
+| linear_ticket_url | string | |
+| title | string | Ticket title |
+| status | string | Linear status |
+| created_at | timestamp | |
+
+**meeting_tasks**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | uuid | primary key |
+| meeting_id | uuid (FK) | References meetings |
+| title | string | Task title |
+| completed | boolean | |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**meeting_notes**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | uuid | primary key |
+| meeting_id | uuid (FK) | References meetings |
+| note | text | |
+| type | string | 'note' or 'meeting_summary' |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
 **clients**
 | Field | Type |
@@ -216,7 +307,9 @@ Cursor must complete one stage fully, then ask for review before proceeding.
 ### Stage 1 — UI Skeleton (NO LOGIC YET)
 - Left navigation layout
 - Top filters bar
-- Empty cards grid
+- **Calendar view on dashboard** (showing meetings from Google Calendar)
+- **Meeting details drawer** (with Linear tickets, tasks, and notes sections - static/placeholder data)
+- Feedback cards grid
 - Add Feedback modal
 - Right-side drawer (static version)
 - Monochrome design applied
@@ -225,8 +318,11 @@ Cursor must complete one stage fully, then ask for review before proceeding.
 ### Stage 2 — Database Integration
 - Connect to Supabase or Firebase
 - CRUD for feedback cards
+- CRUD for meetings (sync with Google Calendar)
 - CRUD for meeting notes
-- Auto-save functionality
+- CRUD for meeting tasks
+- CRUD for meeting Linear tickets (linking tickets to meetings)
+- Auto-save functionality for notes
 
 ### Stage 3 — Linear Integration
 - Read ticket status from Linear API

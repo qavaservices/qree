@@ -26,23 +26,36 @@ This guide will help you set up Google Calendar integration to fetch your meetin
 
 1. Go to **APIs & Services** > **Credentials**
 2. Click **Create Credentials** > **OAuth client ID**
-3. If prompted, configure the OAuth consent screen:
-   - Choose **External** (unless you have a Google Workspace)
-   - Fill in the required information (App name, User support email, etc.)
-   - Add your email to test users
-   - Save and continue through the scopes (you can skip adding scopes for now)
-   - Save and continue through the test users
-   - Go back to dashboard
+3. **IMPORTANT - Configure the OAuth consent screen:**
+   - Go to **APIs & Services** > **OAuth consent screen**
+   - **User Type**: Choose **External** (NOT Internal - Internal is only for Google Workspace organizations)
+   - Click **Create**
+   - Fill in the required information:
+     - **App name**: "Customer Success Manager" (or any name)
+     - **User support email**: Your email address
+     - **Developer contact information**: Your email address
+   - Click **Save and Continue**
+   - **Scopes**: Click **Add or Remove Scopes**
+     - Search for and add: `https://www.googleapis.com/auth/calendar.readonly`
+     - Click **Update** then **Save and Continue**
+   - **Test users** (if in Testing mode):
+     - Click **Add Users**
+     - Add your email address (`pj.qavaservices@gmail.com`)
+     - Click **Add** then **Save and Continue**
+   - **Summary**: Review and click **Back to Dashboard**
 
 4. Create OAuth Client ID:
    - Application type: **Web application**
    - Name: "Customer Success Manager" (or any name you prefer)
    - **Authorized JavaScript origins**: 
-     - For development: `http://localhost:5173` (or your dev port)
+     - For development: `http://localhost:5174` (configured in vite.config.js)
      - For production: Your production domain (e.g., `https://yourdomain.com`)
    - **Authorized redirect URIs**: 
-     - For development: `http://localhost:5173` (or your dev port)
-     - For production: Your production domain
+     - **IMPORTANT**: For Google Identity Services (GIS) token client, you need to add:
+     - `http://localhost:5174` (for development)
+     - `http://localhost:5174/` (with trailing slash - also for development)
+     - Your production domain URLs (with and without trailing slash)
+     - **Note**: The app is configured to always use port 5174
    - Click **Create**
 
 5. Copy your **Client ID** (it will look like: `xxxxx.apps.googleusercontent.com`)
@@ -67,6 +80,52 @@ VITE_GOOGLE_CLIENT_ID=your-client-id-here.apps.googleusercontent.com
 5. Your meetings should now appear!
 
 ## Troubleshooting
+
+### "Error 403: org_internal" error
+**This means your OAuth consent screen is set to "Internal" instead of "External".**
+
+**Solution:**
+1. Go to [Google Cloud Console OAuth Consent Screen](https://console.cloud.google.com/apis/credentials/consent)
+2. Check the **User Type** at the top
+3. If it says **Internal**, you need to change it:
+   - **Note**: You cannot change from Internal to External directly if the app is published
+   - If the app is in Testing mode, you can delete and recreate it as External
+   - Or create a new OAuth client ID in a different project
+4. **Better solution**: Create a new OAuth consent screen:
+   - Go to **APIs & Services** > **OAuth consent screen**
+   - Make sure **User Type** is set to **External**
+   - If it's Internal, you'll need to either:
+     - Delete the current consent screen (if in Testing mode) and create a new one as External
+     - Or use a different Google Cloud project
+5. Make sure your email is added to **Test users** (if in Testing mode)
+6. Save and try connecting again
+
+**Why this happens:**
+- Internal apps can only be used by users within your Google Workspace organization
+- External apps can be used by any Google account
+- For personal use or public apps, you need External
+
+### "Error 400: redirect_uri_mismatch" error
+This is the most common error! It means your redirect URI doesn't match what's configured in Google Cloud Console.
+
+**Solution:**
+1. Go to [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials)
+2. Click on your OAuth 2.0 Client ID
+3. Check the **Authorized JavaScript origins** section:
+   - Make sure `http://localhost:5173` is listed (or whatever port your dev server uses)
+   - Check your terminal to see what port Vite is actually using
+4. Check the **Authorized redirect URIs** section:
+   - Add `http://localhost:5173` (without trailing slash)
+   - Add `http://localhost:5173/` (with trailing slash)
+   - Make sure the port number matches exactly (e.g., if Vite uses 5174, use 5174)
+5. **Save** the changes
+6. Wait 1-2 minutes for changes to propagate
+7. Try connecting again
+
+**Common issues:**
+- Port mismatch: Check your terminal to see what port Vite is using
+- Missing trailing slash: Try adding both with and without `/`
+- HTTP vs HTTPS: Make sure you're using `http://` for localhost (not `https://`)
 
 ### "Google Client ID not configured" error
 - Make sure you've created a `.env` file with `VITE_GOOGLE_CLIENT_ID`

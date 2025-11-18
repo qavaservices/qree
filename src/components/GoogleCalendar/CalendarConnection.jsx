@@ -44,6 +44,8 @@ const CalendarConnection = () => {
   }
 
   if (error) {
+    const isPopupBlocked = error.toLowerCase().includes('popup') || error.toLowerCase().includes('blocked')
+    
     return (
       <div className="p-6 bg-off-white rounded-lg border border-lightest-gray">
         <div className="flex items-start gap-3">
@@ -52,7 +54,12 @@ const CalendarConnection = () => {
           </svg>
           <div className="flex-1">
             <h3 className="text-sm font-semibold text-charcoal mb-1">Error</h3>
-            <p className="text-xs text-gray mb-3">{error}</p>
+            <p className="text-xs text-gray mb-2">{error}</p>
+            {isPopupBlocked && (
+              <p className="text-xs text-lighter-gray mb-3">
+                💡 <strong>Tip:</strong> Make sure popups are allowed for this site. Check your browser's popup blocker settings.
+              </p>
+            )}
             <button
               onClick={signIn}
               className="text-xs text-charcoal hover:text-gray underline"

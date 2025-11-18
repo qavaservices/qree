@@ -4,13 +4,16 @@ import TopBar from './components/Layout/TopBar'
 import FeedbackGrid from './components/Feedback/FeedbackGrid'
 import AddFeedbackModal from './components/Feedback/AddFeedbackModal'
 import DetailsDrawer from './components/Feedback/DetailsDrawer'
-import MeetingsList from './components/Meetings/MeetingsList'
+import CalendarView from './components/Calendar/CalendarView'
+import MeetingDetailsDrawer from './components/Meetings/MeetingDetailsDrawer'
 
 function App() {
   const [currentView, setCurrentView] = useState('dashboard')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [selectedMeeting, setSelectedMeeting] = useState(null)
+  const [isMeetingDrawerOpen, setIsMeetingDrawerOpen] = useState(false)
 
   const handleCardClick = (card) => {
     setSelectedCard(card)
@@ -22,14 +25,19 @@ function App() {
     setSelectedCard(null)
   }
 
+  const handleMeetingClick = (meeting, allMeetings) => {
+    setSelectedMeeting({ meeting, allMeetings })
+    setIsMeetingDrawerOpen(true)
+  }
+
+  const handleCloseMeetingDrawer = () => {
+    setIsMeetingDrawerOpen(false)
+    setSelectedMeeting(null)
+  }
+
   const renderContent = () => {
-    switch (currentView) {
-      case 'meetings':
-        return <MeetingsList />
-      case 'dashboard':
-      default:
-        return <FeedbackGrid onCardClick={handleCardClick} />
-    }
+    // Dashboard always shows calendar view
+    return <CalendarView onMeetingClick={handleMeetingClick} />
   }
 
   return (
@@ -49,6 +57,12 @@ function App() {
         isOpen={isDrawerOpen} 
         onClose={handleCloseDrawer}
         card={selectedCard}
+      />
+      <MeetingDetailsDrawer
+        isOpen={isMeetingDrawerOpen}
+        onClose={handleCloseMeetingDrawer}
+        meeting={selectedMeeting?.meeting}
+        allMeetingsForDate={selectedMeeting?.allMeetings}
       />
     </div>
   )
